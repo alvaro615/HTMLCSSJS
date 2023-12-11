@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Entregas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #delivery-form {
+            margin-bottom: 20px;
+        }
+
+        #deliveries-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .delivery-item {
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gerenciador de Entregas</h1>
+
+    <form id="delivery-form">
+        <label for="recipient">Destinatário:</label>
+        <input type="text" id="recipient" required>
+
+        <label for="address">Endereço:</label>
+        <input type="text" id="address" required>
+
+        <label for="delivery-date">Data de Entrega:</label>
+        <input type="date" id="delivery-date" required>
+
+        <button type="button" onclick="addDelivery()">Adicionar Entrega</button>
+    </form>
+
+    <h2>Entregas:</h2>
+    <ul id="deliveries-list"></ul>
+
+    <script>
+        function addDelivery() {
+            const recipient = document.getElementById('recipient').value;
+            const address = document.getElementById('address').value;
+            const deliveryDate = document.getElementById('delivery-date').value;
+
+            if (recipient && address && deliveryDate) {
+                const deliveryList = document.getElementById('deliveries-list');
+
+                // Criar um novo item de entrega
+                const deliveryItem = document.createElement('li');
+                deliveryItem.className = 'delivery-item';
+                deliveryItem.innerHTML = `<strong>Destinatário:</strong> ${recipient}<br><strong>Endereço:</strong> ${address}<br><strong>Data de Entrega:</strong> ${deliveryDate}
+                    <br><button onclick="updateDeliveryStatus(this)">Atualizar Status</button>`;
+
+                // Adicionar à lista de entregas
+                deliveryList.appendChild(deliveryItem);
+
+                // Limpar os campos do formulário
+                document.getElementById('recipient').value = '';
+                document.getElementById('address').value = '';
+                document.getElementById('delivery-date').value = '';
+
+                // Agendar notificação
+                scheduleNotification(deliveryDate, recipient);
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        function updateDeliveryStatus(button) {
+            const status = confirm('A entrega foi concluída?');
+
+            if (status) {
+                button.parentNode.innerHTML += '<br><strong>Status:</strong> Entregue';
+            } else {
+                button.parentNode.innerHTML += '<br><strong>Status:</strong> Pendente';
+            }
+        }
+
+        function scheduleNotification(date, recipient) {
+            const deliveryDate = new Date(date);
+            const currentDate = new Date();
+
+            // Calcular o tempo até a data de entrega
+            const timeUntilDelivery = deliveryDate.getTime() - currentDate.getTime();
+
+            if (timeUntilDelivery > 0) {
+                // Agendar a notificação
+                setTimeout(() => {
+                    const notificationMessage = `Entrega para ${recipient} agendada para hoje!`;
+                    showNotification(notificationMessage);
+                }, timeUntilDelivery);
+            }
+        }
+
+        function showNotification(message) {
+            // Verificar se o navegador suporta notificações
+            if ('Notification' in window) {
+                Notification.requestPermission().then((permission) => {
+                    if (permission === 'granted') {
+                        new Notification('Gerenciador de Entregas', { body: message });
+                    }
+                });
+            }
+        }
+    </script>
+
+</body>
+</html>
